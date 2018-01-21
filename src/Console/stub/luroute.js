@@ -51,7 +51,7 @@
           return uri;
         }
 
-        return this.origin + uri;
+        return this.origin.replace(/[\/]+$/, '') + '/' + uri.replace(/^[\/]+/, '');
       },
 
       isArray: function (item) {

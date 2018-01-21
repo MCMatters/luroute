@@ -20,6 +20,12 @@ class ServiceProvider extends BaseServiceProvider
     public function boot()
     {
         $this->app->configure('luroute');
+
+        $config = $this->app->make('config');
+
+        if (!$config->has('luroute')) {
+            $config->set('luroute', require __DIR__.'/../config/luroute.php');
+        }
     }
 
     /**
@@ -27,15 +33,10 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(
-            'command.luroute.generate',
-            function ($app) {
-                return new Generate($app);
-            }
-        );
+        $this->app->singleton('command.luroute.generate', function ($app) {
+            return new Generate($app);
+        });
 
-        $this->commands([
-            'command.luroute.generate',
-        ]);
+        $this->commands(['command.luroute.generate']);
     }
 }
