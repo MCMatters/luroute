@@ -1,0 +1,21 @@
+{
+    "name": "mcmatters/luroute",
+    "license": "MIT",
+    "keywords": ["lumen", "route", "routing", "js", "javascript"],
+    "authors": [
+        {
+            "name": "Dmitry Borzyonok",
+            "email": "dima.matters@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/lumen-framework": "^5.5",
+        "illuminate/console": "^5.5",
+        "illuminate/support": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "McMatters\\Luroute\\": "src/"
+        }
+    }
+}
