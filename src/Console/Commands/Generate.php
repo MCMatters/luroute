@@ -86,7 +86,7 @@ class Generate extends Command
      */
     protected function getCompiledJs(): string
     {
-        if ($this->option('compress') ?? $this->config->get('luroute.compress')) {
+        if ($this->option('compress')) {
             $template = $this->files->get(__DIR__.'/../stub/luroute.min.js');
         } else {
             $template = $this->files->get(__DIR__.'/../stub/luroute.js');

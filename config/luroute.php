@@ -8,6 +8,4 @@ return [
     'path' => base_path('public/js'),
 
     'filename' => 'luroute',
-
-    'compress' => true,
 ];
