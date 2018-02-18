@@ -31,19 +31,27 @@
         if (this.isArray(parameters)) {
           for (var key in parameters) {
             if (parameters.hasOwnProperty(key)) {
-              uri = uri.replace(/{([^}]*)}/, parameters[key]);
+              uri = this.replaceRouteParameter(uri, /{([^}]*)}/, parameters[key]);
             }
           }
         } else {
           for (var key in parameters) {
             if (parameters.hasOwnProperty(key)) {
               var routeKeyRegex = new RegExp('{' + key + ':([^}]*)}');
-              uri = uri.replace(routeKeyRegex, parameters[key]);
+              uri = this.replaceRouteParameter(uri, routeKeyRegex, parameters[key]);
             }
           }
         }
 
         return uri;
+      },
+
+      replaceRouteParameter: function (uri, regex, parameter) {
+        if (parameter instanceof Object && parameter.hasOwnProperty('id')) {
+          parameter = parameter.id;
+        }
+
+        return uri.replace(regex, parameter);
       },
 
       addOriginUrl: function (uri, absolute) {
@@ -92,13 +100,13 @@
     };
   })();
 
-  if (typeof define === 'function' && define.amd) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = luroute;
+  }
+  else if (typeof define === 'function' && define.amd) {
     define(function () {
       return luroute;
     });
-  }
-  else if (typeof module === 'object' && module.exports) {
-    module.exports = luroute;
   }
   else {
     window.DUMMY_NAMESPACE = luroute;

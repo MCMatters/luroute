@@ -9,10 +9,11 @@ use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Laravel\Lumen\Application;
 use Symfony\Component\Console\Input\InputOption;
-use const null, DIRECTORY_SEPARATOR;
-use function json_encode, rtrim, strtoupper, str_replace;
+use const false, null, true, DIRECTORY_SEPARATOR;
+use function is_string, json_encode, rtrim, strtoupper, str_replace;
 
 /**
  * Class Generate
@@ -42,6 +43,11 @@ class Generate extends Command
     protected $files;
 
     /**
+     * @var array
+     */
+    protected $exclude = [];
+
+    /**
      * Generate constructor.
      *
      * @param Application $app
@@ -53,6 +59,8 @@ class Generate extends Command
         $this->app = $app;
         $this->config = $app->make('config');
         $this->files = $app->make('files');
+
+        $this->exclude = $this->config->get('luroute.exclude');
     }
 
     /**
@@ -111,17 +119,57 @@ class Generate extends Command
         $routes = [];
 
         foreach ($this->app->router->getRoutes() as $route) {
+            $uri = Arr::get($route, 'uri');
+            $name = Arr::get($route, 'action.as');
+
+            if ($this->isRouteExcluded($uri, $name)) {
+                continue;
+            }
+
             $action = Arr::get($route, 'action.uses');
 
             $routes[] = [
                 'method' => Arr::get($route, 'method'),
-                'uri'    => Arr::get($route, 'uri'),
-                'name'   => Arr::get($route, 'action.as'),
+                'uri'    => $uri,
+                'name'   => $name,
                 'action' => $action instanceof Closure ? null : $action,
             ];
         }
 
         return $routes;
+    }
+
+    /**
+     * @param string|null $uri
+     * @param string|null $name
+     *
+     * @return bool
+     */
+    protected function isRouteExcluded(
+        string $uri = null,
+        string $name = null
+    ): bool {
+        foreach (['uri', 'name'] as $item) {
+            if (null === $$item) {
+                return false;
+            }
+
+            foreach ($this->exclude[$item] ?? [] as $exclude) {
+                if (!is_string($exclude)) {
+                    continue;
+                }
+
+                if (Str::endsWith($exclude, '*')) {
+                    if (Str::startsWith($$item, Str::substr($exclude, 0, -1))) {
+                        return true;
+                    }
+                } elseif ($exclude === $$item) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
