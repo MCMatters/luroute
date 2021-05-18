@@ -1,19 +1,20 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace McMatters\Luroute\Console\Commands;
 
 use Closure;
-use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Lumen\Application;
 use Symfony\Component\Console\Input\InputOption;
-use const false, null, true, DIRECTORY_SEPARATOR;
+
 use function is_string, json_encode, rtrim, strtoupper, str_replace;
+
+use const false, null, true, DIRECTORY_SEPARATOR;
 
 /**
  * Class Generate
@@ -28,17 +29,17 @@ class Generate extends Command
     protected $name = 'luroute:generate';
 
     /**
-     * @var Application
+     * @var \Laravel\Lumen\Application
      */
     protected $app;
 
     /**
-     * @var ConfigRepository
+     * @var \Illuminate\Config\Repository
      */
     protected $config;
 
     /**
-     * @var Filesystem
+     * @var \Illuminate\Filesystem\Filesystem
      */
     protected $files;
 
@@ -50,7 +51,7 @@ class Generate extends Command
     /**
      * Generate constructor.
      *
-     * @param Application $app
+     * @param \Laravel\Lumen\Application $app
      */
     public function __construct(Application $app)
     {
@@ -65,6 +66,7 @@ class Generate extends Command
 
     /**
      * @return void
+     *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function handle()
@@ -90,6 +92,7 @@ class Generate extends Command
 
     /**
      * @return string
+     *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function getCompiledJs(): string

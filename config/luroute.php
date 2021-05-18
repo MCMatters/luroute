@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 return [
     // Namespace for the global access from the "window" object in JavaScript.
