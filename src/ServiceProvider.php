@@ -16,8 +16,10 @@ class ServiceProvider extends BaseServiceProvider
 {
     /**
      * @return void
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function boot()
+    public function boot(): void
     {
         $this->app->configure('luroute');
 
@@ -31,12 +33,14 @@ class ServiceProvider extends BaseServiceProvider
     /**
      * @return void
      */
-    public function register()
+    public function register(): void
     {
-        $this->app->singleton('command.luroute.generate', function ($app) {
-            return new Generate($app);
-        });
+        if ($this->app->runningInConsole()) {
+            $this->app->singleton('command.luroute.generate', function ($app) {
+                return new Generate($app);
+            });
 
-        $this->commands(['command.luroute.generate']);
+            $this->commands(['command.luroute.generate']);
+        }
     }
 }

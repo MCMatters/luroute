@@ -102,13 +102,11 @@
 
   if (typeof module === 'object' && module.exports) {
     module.exports = luroute;
-  }
-  else if (typeof define === 'function' && define.amd) {
+  } else if (typeof define === 'function' && define.amd) {
     define(function () {
       return luroute;
     });
-  }
-  else {
+  } else {
     window.DUMMY_NAMESPACE = luroute;
   }
 })();

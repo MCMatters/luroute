@@ -6,15 +6,23 @@ namespace McMatters\Luroute\Console\Commands;
 
 use Closure;
 use Illuminate\Console\Command;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Arr;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 use Laravel\Lumen\Application;
 use Symfony\Component\Console\Input\InputOption;
 
-use function is_string, json_encode, rtrim, strtoupper, str_replace;
+use function file_get_contents;
+use function file_put_contents;
+use function is_string;
+use function json_encode;
+use function rtrim;
+use function strtoupper;
+use function str_replace;
 
-use const false, null, true, DIRECTORY_SEPARATOR;
+use const DIRECTORY_SEPARATOR;
+use const false;
+use const null;
+use const true;
 
 /**
  * Class Generate
@@ -39,11 +47,6 @@ class Generate extends Command
     protected $config;
 
     /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
-
-    /**
      * @var array
      */
     protected $exclude = [];
@@ -59,23 +62,26 @@ class Generate extends Command
 
         $this->app = $app;
         $this->config = $app->make('config');
-        $this->files = $app->make('files');
 
         $this->exclude = $this->config->get('luroute.exclude');
     }
 
     /**
-     * @return void
+     * @return int
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public function handle()
+    public function handle(): int
     {
-        if ($this->files->put($this->getFilePath(), $this->getCompiledJs())) {
+        if (file_put_contents($this->getFilePath(), $this->getCompiledJs())) {
             $this->info('Routes successfully generated.');
-        } else {
-            $this->error('Can not generate routes. Please check your file permissions');
+
+            return self::SUCCESS;
         }
+
+        $this->error('Can not generate routes. Please check your file permissions');
+
+        return self::FAILURE;
     }
 
     /**
@@ -98,9 +104,13 @@ class Generate extends Command
     protected function getCompiledJs(): string
     {
         if ($this->option('compress')) {
-            $template = $this->files->get(__DIR__.'/../stub/luroute.min.js');
+            $template = file_get_contents(__DIR__.'/../stub/luroute.min.js');
         } else {
-            $template = $this->files->get(__DIR__.'/../stub/luroute.js');
+            $template = file_get_contents(__DIR__.'/../stub/luroute.js');
+        }
+
+        if (!$template) {
+            throw new FileNotFoundException();
         }
 
         $routes = $this->routesToJson($this->getRoutes());
@@ -122,19 +132,19 @@ class Generate extends Command
         $routes = [];
 
         foreach ($this->app->router->getRoutes() as $route) {
-            $uri = Arr::get($route, 'uri');
-            $name = Arr::get($route, 'action.as');
+            $uri = $route['uri'] ?? null;
+            $name = $route['action']['as'] ?? null;
 
             if ($this->isRouteExcluded($uri, $name)) {
                 continue;
             }
 
-            $action = Arr::get($route, 'action.uses');
+            $action = $route['action']['uses'] ?? null;
 
             $routes[] = [
-                'method' => Arr::get($route, 'method'),
-                'uri'    => $uri,
-                'name'   => $name,
+                'method' => $route['method'] ?? null,
+                'uri' => $uri,
+                'name' => $name,
                 'action' => $action instanceof Closure ? null : $action,
             ];
         }
@@ -149,8 +159,8 @@ class Generate extends Command
      * @return bool
      */
     protected function isRouteExcluded(
-        string $uri = null,
-        string $name = null
+        ?string $uri = null,
+        ?string $name = null
     ): bool {
         foreach (['uri', 'name'] as $item) {
             if (null === $$item) {
